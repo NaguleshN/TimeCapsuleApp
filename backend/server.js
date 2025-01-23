@@ -14,6 +14,7 @@ import mongoose from 'mongoose';
 import Capsule from './models/capsuleModel.js'
 import cors from 'cors';
 import User from './models/userModel.js'
+import Collab from './models/collaboration.js'
 
 
 // Initialize environment variables
@@ -41,9 +42,9 @@ const app = express();
 // Middleware
 
 const corsOptions = {
-  origin: [ ' http://localhost:3000/' , 'http://localhost:3001' ] , // Replace with your frontend's URL
-  methods: 'GET,POST', // Allowed HTTP methods
-  allowedHeaders: 'Content-Type,Authorization', // Allowed headers
+  origin: ['http://localhost:3000', 'http://localhost:3001'], // Remove trailing slashes
+  methods: ['GET', 'POST'], // Specify allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Specify allowed headers
 };
 
 app.use(cors(corsOptions));
@@ -51,13 +52,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// File upload setup (using Multer)
-const upload = multer({
-  dest: uploadsDir, // Save files to the 'uploads' folder
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB size limit (adjust as needed)
-}).single('file'); // Accepts a single file upload with the field name 'file'
 
-// Serve static files (uploaded media) in production
+const upload = multer({
+  dest: uploadsDir, 
+  limits: { fileSize: 10 * 1024 * 1024 },
+}).single('file');
+
+
 if (process.env.NODE_ENV === 'production') {
   app.use('/uploads', express.static(path.join(__dirname, 'uploads')));  // Serving the 'uploads' folder
 }
@@ -118,6 +119,30 @@ app.get('/all-records', async (req, res) => {
 app.get('/all-users', async (req, res) => {
   try {
     const allRecords = await User.find(); 
+    console.log(allRecords)
+    res.json(allRecords); 
+  } catch (error) {
+    console.error('Error fetching records:', error);
+    res.status(500).json({ message: 'Error fetching records' });
+  }
+})
+
+app.get('/allcollab', async (req, res) => {
+  try {
+    const allRecords = await Collab.find(); 
+    console.log(allRecords)
+    res.json(allRecords); 
+  } catch (error) {
+    console.error('Error fetching records:', error);
+    res.status(500).json({ message: 'Error fetching records' });
+  }
+})
+
+
+app.get('/getcollab/:id', async (req, res) => {
+  try {
+    const cap_id = req.params.id;
+    const allRecords = await Capsule.find({ _id: cap_id}); 
     console.log(allRecords)
     res.json(allRecords); 
   } catch (error) {

@@ -46,21 +46,15 @@ const Header = () => {
                 View Capsule
               </Nav.Link>
               <Nav.Link href="http://localhost:3001/view-invitations">
-                View Invitations
+                View Collaborations
               </Nav.Link>
 
               {userInfo ? (
                 <>
-                  {/* User Dropdown */}
                   <NavDropdown
                     title={
                       <span className="d-flex align-items-center">
-                        <img
-                          src={userInfo.avatar || '/default-avatar.png'}
-                          alt="avatar"
-                          className="rounded-circle me-2"
-                          style={{ width: '30px', height: '30px' }}
-                        />
+                        
                         {userInfo.name}
                       </span>
                     }
@@ -77,7 +71,7 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                  {/* Login and Register Links */}
+                 
                   <LinkContainer to="/login">
                     <Nav.Link className="d-flex align-items-center">
                       <FaSignInAlt className="me-1" />

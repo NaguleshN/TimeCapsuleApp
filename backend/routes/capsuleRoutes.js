@@ -4,6 +4,7 @@ import multer from 'multer';  // Import multer for file uploads
 import { fileURLToPath } from 'url'; // Import for ES module compatibility
 import { dirname } from 'path'; // Import dirname to get directory name from fileURL
 import Capsule from '../models/capsuleModel.js';  // Capsule model
+import Collab from '../models/collaboration.js'
 
 const router = express.Router();
 
@@ -38,8 +39,9 @@ const upload = multer({ storage, fileFilter });
 
 // POST route for creating a new capsule with file upload
 router.post('/', upload.single('file'), async (req, res) => {
+  // const { email, password } = req.body;
   try {
-    const { capsuleName, unlockDate, typeOfCapsule, password ,collab } = req.body;
+    const { capsuleName, unlockDate, typeOfCapsule, password ,collab ,latitude , longitude} = req.body;
 
     // Validate required fields
     if (!capsuleName || !unlockDate || !typeOfCapsule || !password || !collab) {
@@ -62,12 +64,16 @@ router.post('/', upload.single('file'), async (req, res) => {
       collab,
       password,
       file: filePath,
+      latitude,
+      longitude
     });
-
+    console.log(req.body.collab)
+    
     const newCollab = new Collab({
-      email: 'collaborator@example.com',
+      email: req.body.collab,
       capsule: newCapsule._id, 
     });
+
     await newCollab.save();
     
     const savedCapsule = await newCapsule.save();

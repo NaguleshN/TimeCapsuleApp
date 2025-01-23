@@ -8,6 +8,8 @@ const DigitalTimeCapsuleForm = () => {
   const [collab, setCollab] = useState('');
   const [password, setPassword] = useState('');
   const [file, setFile] = useState(null);
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -31,6 +33,23 @@ const DigitalTimeCapsuleForm = () => {
     }
   };
 
+  const getLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLatitude(position.coords.latitude.toFixed(6));
+          setLongitude(position.coords.longitude.toFixed(6));
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          setError('Unable to fetch location. Please enable location services.');
+        }
+      );
+    } else {
+      setError('Geolocation is not supported by this browser.');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -40,6 +59,8 @@ const DigitalTimeCapsuleForm = () => {
     formData.append('typeOfCapsule', typeOfCapsule);
     formData.append('password', password);
     formData.append('collab', collab);
+    formData.append('latitude', latitude);
+    formData.append('longitude', longitude);
     if (file) formData.append('file', file);
 
     try {
@@ -127,6 +148,20 @@ const DigitalTimeCapsuleForm = () => {
             ))}
           </Form.Select>
         </Form.Group>
+
+        <Form.Group className="mb-3" controlId="latitude">
+          <Form.Label>Latitude</Form.Label>
+          <Form.Control type="text" value={latitude} readOnly />
+        </Form.Group>
+
+        <Form.Group className="mb-3" controlId="longitude">
+          <Form.Label>Longitude</Form.Label>
+          <Form.Control type="text" value={longitude} readOnly />
+        </Form.Group>
+
+        <Button variant="secondary" onClick={getLocation} className="mb-3">
+          Get Location
+        </Button>
 
         <Form.Group className="mb-3" controlId="password">
           <Form.Label>Password</Form.Label>
