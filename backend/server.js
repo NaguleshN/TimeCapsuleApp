@@ -107,7 +107,7 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-app.get('/all-records', protect, async (req, res) => {
+app.get('/all-records', async (req, res) => {
   try {
     const allRecords = await Capsule.find(); 
     console.log()

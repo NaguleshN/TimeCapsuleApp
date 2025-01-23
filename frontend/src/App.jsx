@@ -5,10 +5,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from './components/Header';
 import DigitalTimeCapsuleForm from './components/DigitalTimeCapsuleForm';
-import CapsuleDetails from './components/CapsuleDetail';
-
-
-
+                                                                                                                                                                                                                                                                                                                                                                                                              
 
 const App = () => {
   return (
@@ -18,8 +15,7 @@ const App = () => {
       <Container className="my-2">
         <Routes>
           <Route path="/" element={<DigitalTimeCapsuleForm />} />
-          <Route path="/record/:id" element={<CapsuleDetails />} /> 
-          {/* Add additional routes here as needed */}
+         
         </Routes>
         <Outlet />
       </Container>

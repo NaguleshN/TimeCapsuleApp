@@ -6,12 +6,13 @@ import { getAuthTokenFromCookie } from '../slices/getAuthTokenFromCookie.js';
 
 
 const CapsulesFetcher = () => {
-    const token = getAuthTokenFromCookie();
-    console.log(token)
-    if(!token){
-        return <Navigate to="/login" />;
-    }
   const { userInfo } = useSelector((state) => state.auth); // Get the logged-in user info from Redux
+  try{
+      console.log(userInfo.email);
+    }
+    catch{
+      return <Navigate to="/login" />;
+    }
   const [records, setRecords] = useState([]); // List of records
   const [capsules, setCapsules] = useState([]); // Capsules fetched
 

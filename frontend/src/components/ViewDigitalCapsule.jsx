@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { getAuthTokenFromCookie } from '../slices/getAuthTokenFromCookie.js';
 import { Navigate, Outlet } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const RecordsList = () => {
-  const token = getAuthTokenFromCookie();
-      console.log(token)
-      if(!token){
-          return <Navigate to="/login" />;
+  const { userInfo } = useSelector((state) => state.auth); // Get the logged-in user info from Redux
+    try{
+        console.log(userInfo.email);
       }
+      catch{
+        return <Navigate to="/login" />;
+      }
+
   const [records, setRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -127,7 +131,7 @@ const RecordsList = () => {
                     <div class="text-gray-600 text-sm mb-2">
                         <span class="font-medium">Password: </span>{record.password}
                     </div>
-                    <button type="button" class="bg-blue-500  px-4 py-2 rounded-md hover:bg-blue-600  m-4" onClick={() => handleViewClick(record._id)} >View</button>
+                    {/* <button type="button" class="bg-blue-500  px-4 py-2 rounded-md hover:bg-blue-600  m-4" onClick={() => handleViewClick(record._id)} >View</button> */}
                 </div>
                 </div>
               ))}

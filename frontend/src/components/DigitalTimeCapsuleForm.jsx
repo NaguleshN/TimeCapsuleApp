@@ -2,13 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Form, Button, Container, Alert, Spinner } from 'react-bootstrap';
 import { getAuthTokenFromCookie } from '../slices/getAuthTokenFromCookie.js';
 import { Navigate, Outlet } from 'react-router-dom';
+import axios from 'axios';
+import { useSelector } from 'react-redux'; 
+
+
+
 
 const DigitalTimeCapsuleForm = () => {
-  const token = getAuthTokenFromCookie();
-      console.log(token)
-      if(!token){
-          // return <Navigate to="/login" />;
-      }
+  const { userInfo } = useSelector((state) => state.auth);
+  try{
+    console.log(userInfo.email)
+
+  }
+  catch{
+    return <Navigate to="/login" />;
+  }
   const [capsuleName, setCapsuleName] = useState('');
   const [unlockDate, setUnlockDate] = useState('');
   const [typeOfCapsule, setTypeOfCapsule] = useState('video');
@@ -27,6 +35,24 @@ const DigitalTimeCapsuleForm = () => {
   };
 
   const getUsers = async () => {
+    
+    
+      // if (token) {
+      //   const response = await axios.get('http://localhost:5000/all-users', {
+      //     headers: {
+      //       'Authorization': `Bearer ${token}`,
+      //     },
+      //     withCredentials: true,  
+      //   });
+      //   console.log(response);
+      //   const data = response.data;
+      //   console.log(data);
+      // }
+      // else{
+      //   console.log(token)
+      // }
+
+
     try {
       const response = await fetch('http://localhost:5000/all-users');
       if (!response.ok) {
