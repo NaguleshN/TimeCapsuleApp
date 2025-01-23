@@ -11,6 +11,10 @@ import capsuleRoutes from './routes/capsuleRoutes.js';
 import multer from 'multer';
 import fs from 'fs';
 import mongoose from 'mongoose';
+import Capsule from './models/capsuleModel.js'
+import cors from 'cors';
+import User from './models/userModel.js'
+
 
 // Initialize environment variables
 dotenv.config();
@@ -35,6 +39,14 @@ connectDB();
 const app = express();
 
 // Middleware
+
+const corsOptions = {
+  origin: [ ' http://localhost:3000/' , 'http://localhost:3001' ] , // Replace with your frontend's URL
+  methods: 'GET,POST', // Allowed HTTP methods
+  allowedHeaders: 'Content-Type,Authorization', // Allowed headers
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -90,6 +102,30 @@ if (process.env.NODE_ENV === 'production') {
     res.send('API is running....');
   });
 }
+
+
+app.get('/all-records', async (req, res) => {
+  try {
+    const allRecords = await Capsule.find(); 
+    console.log()
+    res.json(allRecords); 
+  } catch (error) {
+    console.error('Error fetching records:', error);
+    res.status(500).json({ message: 'Error fetching records' });
+  }
+})
+
+app.get('/all-users', async (req, res) => {
+  try {
+    const allRecords = await User.find(); 
+    console.log(allRecords)
+    res.json(allRecords); 
+  } catch (error) {
+    console.error('Error fetching records:', error);
+    res.status(500).json({ message: 'Error fetching records' });
+  }
+})
+
 
 // Error handling middleware
 app.use(notFound);

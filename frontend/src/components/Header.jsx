@@ -31,6 +31,7 @@ const Header = () => {
           <LinkContainer to="/">
             <Navbar.Brand>MERN Auth</Navbar.Brand>
           </LinkContainer>
+            <a href="http://localhost:3001/view-capsule">MERN Auth</a>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ms-auto">
