@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import { getAuthTokenFromCookie } from '../slices/getAuthTokenFromCookie.js';
 import { Navigate, Outlet } from 'react-router-dom';
@@ -16,23 +17,23 @@ const RecordsList = () => {
   const [records, setRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  let doc_res ; 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
-    
+
       try {
-        doc_res = await fetch('http://localhost:5000/all-records', {
+        const response = await fetch('http://localhost:5000/all-records', {
           method: "GET",  
           credentials: "include", 
         });
-        console.log(doc_res)
-        if (!doc_res.ok) {
+        if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await doc_res.json();
+        const data = await response.json();
+        console.log('Fetched Records:', data); // Debugging response
         setRecords(data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -44,27 +45,26 @@ const RecordsList = () => {
 
     fetchData();
   }, []);
-
       const navigate = useNavigate();
   
       const handleViewClick = (id) => {
         navigate(`/record/${id}`); // Navigate to the record detail page with the _id
       };
 
-    const today = new Date();
-    const todayString = today.toISOString().split('T')[0]; 
+  const today = new Date();
+  const todayString = today.toISOString().split('T')[0];
 
-    const filteredRecords = records.filter(record => {
-        const unlockDate = new Date(record.unlockDate);
-        const unlockDateString = unlockDate.toISOString().split('T')[0];
-        return unlockDateString === todayString;
-    });
+  const filteredRecords = records.filter(record => {
+    const unlockDate = new Date(record.unlockDate);
+    const unlockDateString = unlockDate.toISOString().split('T')[0];
+    return unlockDateString === todayString;
+  });
 
-    const unfilteredRecords = records.filter(record => {
-        const unlockDate = new Date(record.unlockDate);
-        const unlockDateString = unlockDate.toISOString().split('T')[0];
-        return unlockDateString != todayString; 
-    });
+  const unfilteredRecords = records.filter(record => {
+    const unlockDate = new Date(record.unlockDate);
+    const unlockDateString = unlockDate.toISOString().split('T')[0];
+    return unlockDateString !== todayString;
+  });
 
     return (
         <>
@@ -105,6 +105,59 @@ const RecordsList = () => {
               ))}
             </ul>
           )}
+  return (
+    <>
+      <h1>Today's Records</h1>
+      {isLoading && <p>Loading records...</p>}
+      {error && <p className="error">{error}</p>}
+      {filteredRecords.length === 0 ? (
+        <p>No records to unlock today.</p>
+      ) : (
+        <ul className="list-none space-y-2">
+          {filteredRecords.map((record) => (
+            <div key={record.id || record._id}>
+              <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white p-4 m-4">
+                <div className="text-xl font-semibold text-gray-800 mb-2">
+                  Capsule Name: {record.capsuleName}
+                </div>
+                <div className="text-gray-600 text-sm mb-2">
+                  <span className="font-medium">Unlock Date: </span>
+                  {record.unlockDate}
+                </div>
+                <div className="text-gray-600 text-sm mb-2">
+                  <span className="font-medium">Type of Capsule: </span>
+                  {record.typeOfCapsule}
+                </div>
+                <div className="text-gray-600 text-sm mb-2">
+                  <span className="font-medium">Password: </span>
+                  {record.password}
+                </div>
+                <div className="flex justify-between">
+                  <button
+                    type="button"
+                    className="bg-blue-500 px-4 py-2 rounded-md hover:bg-blue-600 m-4"
+                    onClick={() => {
+                      if (record.id || record._id) {
+                        navigate(`/view-capsule/${record.id || record._id}`);
+                      } else {
+                        alert('Unable to navigate. Record ID is missing.');
+                      }
+                    }}
+                  >
+                    View
+                  </button>
+                  <button
+                    type="button"
+                    className="bg-red-500 px-4 py-2 rounded-md hover:bg-red-600 m-4"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </ul>
+      )}
 
             <h1>Locked Records</h1>
 
@@ -141,4 +194,4 @@ const RecordsList = () => {
       );
 };
 
-export default RecordsList;
+export default ViewDigitalCapsule;

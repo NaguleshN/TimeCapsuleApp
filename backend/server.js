@@ -11,7 +11,8 @@ import capsuleRoutes from './routes/capsuleRoutes.js';
 import multer from 'multer';
 import fs from 'fs';
 import mongoose from 'mongoose';
-import Capsule from './models/capsuleModel.js'
+import Capsule from './models/capsuleModel.js';
+import User from './models/userModel.js';
 import cors from 'cors';
 import User from './models/userModel.js'
 import Collab from './models/collaboration.js'
@@ -20,7 +21,6 @@ import { protect } from './middleware/authMiddleware.js';
 
 
 dotenv.config();
-
 
 // Resolve __dirname in ES module context
 const __filename = fileURLToPath(import.meta.url);
@@ -63,11 +63,11 @@ const upload = multer({
 
 
 if (process.env.NODE_ENV === 'production') {
-  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));  // Serving the 'uploads' folder
+  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 }
 
 // Capsule Routes
-app.use('/api/capsules', capsuleRoutes);  // Use the capsule routes here
+app.use('/api/capsules', capsuleRoutes);
 
 // User routes
 app.use('/api/users', userRoutes);
@@ -79,7 +79,7 @@ app.post('/api/upload', upload, async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
-    
+
     // Handle file (for example, save the file details to MongoDB or perform additional processing)
     const fileUrl = `/uploads/${req.file.filename}`; // URL for the uploaded file
 
@@ -109,52 +109,55 @@ if (process.env.NODE_ENV === 'production') {
 
 app.get('/all-records', async (req, res) => {
   try {
-    const allRecords = await Capsule.find(); 
-    console.log()
+    const allRecords = await Capsule.find();
     res.json(allRecords); 
   } catch (error) {
     console.error('Error fetching records:', error);
     res.status(500).json({ message: 'Error fetching records' });
   }
-})
+});
 
+// Route for fetching a specific record by ID
+app.get('/records/:id', async (req, res) => {
+  const { id } = req.params;  // Extract the ID from the request
+  try {
+    const record = await Capsule.findById(id);  // Retrieve the record from MongoDB
+    if (!record) {
+      return res.status(404).json({ message: 'Capsule not found' });
+    }
+    res.json(record);  // Return the capsule details
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch capsule', error });
+  }
+});
+
+// Route for fetching all users
 app.get('/all-users', async (req, res) => {
   try {
-    const allRecords = await User.find(); 
-    console.log(allRecords)
-    res.json(allRecords); 
+    const allUsers = await User.find(); 
+    res.json(allUsers); 
   } catch (error) {
-    console.error('Error fetching records:', error);
-    res.status(500).json({ message: 'Error fetching records' });
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Error fetching users' });
   }
-})
+});
 
-app.get('/allcollab', async (req, res) => {
+// Route for fetching capsules of a specific user
+app.get('/api/capsules/user/:userId', async (req, res) => {
+  const { userId } = req.params; // Get userId from request parameters
   try {
-    const allRecords = await Collab.find(); 
-    console.log(allRecords)
-    res.json(allRecords); 
+    const userCapsules = await Capsule.find({ userId }); // Find all capsules for this user
+    if (!userCapsules) {
+      return res.status(404).json({ message: 'No capsules found for this user' });
+    }
+    res.json(userCapsules); // Return all capsules of the specific user
   } catch (error) {
-    console.error('Error fetching records:', error);
-    res.status(500).json({ message: 'Error fetching records' });
+    console.error('Error fetching capsules for user:', error);
+    res.status(500).json({ message: 'Failed to fetch capsules for the user' });
   }
-})
+});
 
-
-app.get('/getcollab/:id', async (req, res) => {
-  try {
-    const cap_id = req.params.id;
-    const allRecords = await Capsule.find({ _id: cap_id}); 
-    console.log(allRecords)
-    res.json(allRecords); 
-  } catch (error) {
-    console.error('Error fetching records:', error);
-    res.status(500).json({ message: 'Error fetching records' });
-  }
-})
-
-
-
+// Error handling middleware
 app.use(notFound);
 app.use(errorHandler);
 
