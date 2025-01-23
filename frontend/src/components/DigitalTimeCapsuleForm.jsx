@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Container, Alert, Spinner } from 'react-bootstrap';
+import { getAuthTokenFromCookie } from '../slices/getAuthTokenFromCookie.js';
+import { Navigate, Outlet } from 'react-router-dom';
 
 const DigitalTimeCapsuleForm = () => {
+  const token = getAuthTokenFromCookie();
+      console.log(token)
+      if(!token){
+          // return <Navigate to="/login" />;
+      }
   const [capsuleName, setCapsuleName] = useState('');
   const [unlockDate, setUnlockDate] = useState('');
   const [typeOfCapsule, setTypeOfCapsule] = useState('video');

@@ -15,9 +15,10 @@ import Capsule from './models/capsuleModel.js'
 import cors from 'cors';
 import User from './models/userModel.js'
 import Collab from './models/collaboration.js'
+import loginUser from './middleware/loginUser.js'
+import { protect } from './middleware/authMiddleware.js';
 
 
-// Initialize environment variables
 dotenv.config();
 
 
@@ -39,13 +40,15 @@ connectDB();
 // Create an instance of Express
 const app = express();
 
-// Middleware
+
 
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://localhost:3001'], // Remove trailing slashes
-  methods: ['GET', 'POST'], // Specify allowed methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Specify allowed headers
+  origin: ['http://localhost:3000', 'http://localhost:3001'], 
+  methods: ['GET', 'POST'], 
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 };
+
 
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -91,9 +94,9 @@ app.post('/api/upload', upload, async (req, res) => {
   }
 });
 
-// Serve frontend in production
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));  
 if (process.env.NODE_ENV === 'production') {
-  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));  // Serving static files from 'uploads' folder
 
   app.get('*', (req, res) =>
     res.sendFile(path.resolve(__dirname, 'frontend', 'dist', 'index.html'))
@@ -104,8 +107,7 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-
-app.get('/all-records', async (req, res) => {
+app.get('/all-records', protect, async (req, res) => {
   try {
     const allRecords = await Capsule.find(); 
     console.log()
@@ -152,9 +154,8 @@ app.get('/getcollab/:id', async (req, res) => {
 })
 
 
-// Error handling middleware
+
 app.use(notFound);
 app.use(errorHandler);
 
-// Start the server
 app.listen(port, () => console.log(`Server started on port ${port}`));

@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
+import { getAuthTokenFromCookie } from '../slices/getAuthTokenFromCookie.js';
+import { Navigate, Outlet } from 'react-router-dom';
 
 const RecordsList = () => {
+  const token = getAuthTokenFromCookie();
+      console.log(token)
+      if(!token){
+          return <Navigate to="/login" />;
+      }
   const [records, setRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -12,7 +20,10 @@ const RecordsList = () => {
       setError(null);
     
       try {
-        doc_res = await fetch('http://localhost:5000/all-records');
+        doc_res = await fetch('http://localhost:5000/all-records', {
+          method: "GET",  
+          credentials: "include", 
+        });
         console.log(doc_res)
         if (!doc_res.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -30,6 +41,11 @@ const RecordsList = () => {
     fetchData();
   }, []);
 
+      const navigate = useNavigate();
+  
+      const handleViewClick = (id) => {
+        navigate(`/record/${id}`); // Navigate to the record detail page with the _id
+      };
 
     const today = new Date();
     const todayString = today.toISOString().split('T')[0]; 
@@ -72,11 +88,13 @@ const RecordsList = () => {
                         <span class="font-medium">Type of Capsule: </span>{record.typeOfCapsule}
                     </div>
                     <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Password: </span>{record.password}
+                        <span class="font-medium">Latitude: </span>{record.latitude}
+                    </div>
+                    <div class="text-gray-600 text-sm mb-2">
+                        <span class="font-medium">Longitude: </span>{record.longitude}
                     </div>
                     <div class="flex justify-between ">
-                        <button type="button" class="bg-blue-500  px-4 py-2 rounded-md hover:bg-blue-600  m-4" >View</button>
-                        <button type="button" class="bg-red-500 px-4 py-2 rounded-md hover:bg-red-600  m-4">Delete</button>
+                        <button type="button" class="bg-blue-500  px-4 py-2 rounded-md hover:bg-blue-600  m-4" onClick={() => handleViewClick(record._id)} >View</button>
                     </div>
                 </div>
                 </div>
@@ -109,6 +127,7 @@ const RecordsList = () => {
                     <div class="text-gray-600 text-sm mb-2">
                         <span class="font-medium">Password: </span>{record.password}
                     </div>
+                    <button type="button" class="bg-blue-500  px-4 py-2 rounded-md hover:bg-blue-600  m-4" onClick={() => handleViewClick(record._id)} >View</button>
                 </div>
                 </div>
               ))}

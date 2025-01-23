@@ -48,6 +48,9 @@ const Header = () => {
               <Nav.Link href="http://localhost:3001/view-invitations">
                 View Collaborations
               </Nav.Link>
+              <Nav.Link href="http://localhost:3001/map">
+                Map view
+              </Nav.Link>
 
               {userInfo ? (
                 <>
