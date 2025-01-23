@@ -11,14 +11,12 @@ import capsuleRoutes from './routes/capsuleRoutes.js';
 import multer from 'multer';
 import fs from 'fs';
 import mongoose from 'mongoose';
-import Capsule from './models/capsuleModel.js'
+import Capsule from './models/capsuleModel.js';
+import User from './models/userModel.js';
 import cors from 'cors';
-import User from './models/userModel.js'
-
 
 // Initialize environment variables
 dotenv.config();
-
 
 // Resolve __dirname in ES module context
 const __filename = fileURLToPath(import.meta.url);
@@ -41,9 +39,9 @@ const app = express();
 // Middleware
 
 const corsOptions = {
-  origin: [ ' http://localhost:3000/' , 'http://localhost:3001' ] , // Replace with your frontend's URL
-  methods: 'GET,POST', // Allowed HTTP methods
-  allowedHeaders: 'Content-Type,Authorization', // Allowed headers
+  origin: ['http://localhost:3000'], // Allow frontend on localhost:3000
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
 app.use(cors(corsOptions));
@@ -59,11 +57,11 @@ const upload = multer({
 
 // Serve static files (uploaded media) in production
 if (process.env.NODE_ENV === 'production') {
-  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));  // Serving the 'uploads' folder
+  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 }
 
 // Capsule Routes
-app.use('/api/capsules', capsuleRoutes);  // Use the capsule routes here
+app.use('/api/capsules', capsuleRoutes);
 
 // User routes
 app.use('/api/users', userRoutes);
@@ -75,7 +73,7 @@ app.post('/api/upload', upload, async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
-    
+
     // Handle file (for example, save the file details to MongoDB or perform additional processing)
     const fileUrl = `/uploads/${req.file.filename}`; // URL for the uploaded file
 
@@ -90,42 +88,56 @@ app.post('/api/upload', upload, async (req, res) => {
   }
 });
 
-// Serve frontend in production
-if (process.env.NODE_ENV === 'production') {
-  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));  // Serving static files from 'uploads' folder
-
-  app.get('*', (req, res) =>
-    res.sendFile(path.resolve(__dirname, 'frontend', 'dist', 'index.html'))
-  );
-} else {
-  app.get('/', (req, res) => {
-    res.send('API is running....');
-  });
-}
-
-
+// Route for fetching all records (capsules)
 app.get('/all-records', async (req, res) => {
   try {
-    const allRecords = await Capsule.find(); 
-    console.log()
+    const allRecords = await Capsule.find();
     res.json(allRecords); 
   } catch (error) {
     console.error('Error fetching records:', error);
     res.status(500).json({ message: 'Error fetching records' });
   }
-})
+});
 
+// Route for fetching a specific record by ID
+app.get('/records/:id', async (req, res) => {
+  const { id } = req.params;  // Extract the ID from the request
+  try {
+    const record = await Capsule.findById(id);  // Retrieve the record from MongoDB
+    if (!record) {
+      return res.status(404).json({ message: 'Capsule not found' });
+    }
+    res.json(record);  // Return the capsule details
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch capsule', error });
+  }
+});
+
+// Route for fetching all users
 app.get('/all-users', async (req, res) => {
   try {
-    const allRecords = await User.find(); 
-    console.log(allRecords)
-    res.json(allRecords); 
+    const allUsers = await User.find(); 
+    res.json(allUsers); 
   } catch (error) {
-    console.error('Error fetching records:', error);
-    res.status(500).json({ message: 'Error fetching records' });
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Error fetching users' });
   }
-})
+});
 
+// Route for fetching capsules of a specific user
+app.get('/api/capsules/user/:userId', async (req, res) => {
+  const { userId } = req.params; // Get userId from request parameters
+  try {
+    const userCapsules = await Capsule.find({ userId }); // Find all capsules for this user
+    if (!userCapsules) {
+      return res.status(404).json({ message: 'No capsules found for this user' });
+    }
+    res.json(userCapsules); // Return all capsules of the specific user
+  } catch (error) {
+    console.error('Error fetching capsules for user:', error);
+    res.status(500).json({ message: 'Failed to fetch capsules for the user' });
+  }
+});
 
 // Error handling middleware
 app.use(notFound);

@@ -4,6 +4,7 @@ import multer from 'multer';  // Import multer for file uploads
 import { fileURLToPath } from 'url'; // Import for ES module compatibility
 import { dirname } from 'path'; // Import dirname to get directory name from fileURL
 import Capsule from '../models/capsuleModel.js';  // Capsule model
+import Collab from '../models/collaboration.js';
 
 const router = express.Router();
 

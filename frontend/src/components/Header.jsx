@@ -7,6 +7,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useLogoutMutation } from '../slices/usersApiSlice';
 import { logout } from '../slices/authSlice';
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -42,11 +44,14 @@ const Header = () => {
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ms-auto align-items-center">
               {/* Static Links */}
-              <Nav.Link href="http://localhost:3001/view-capsule">
+              <Nav.Link href="http://localhost:3000/view-capsule">
                 View Capsule
               </Nav.Link>
-              <Nav.Link href="http://localhost:3001/view-invitations">
+              <Nav.Link href="http://localhost:3000/view-invitations">
                 View Invitations
+              </Nav.Link>
+              <Nav.Link href="http://localhost:3000/map">
+                Map
               </Nav.Link>
 
               {userInfo ? (
@@ -79,15 +84,13 @@ const Header = () => {
                 <>
                   {/* Login and Register Links */}
                   <LinkContainer to="/login">
-                    <Nav.Link className="d-flex align-items-center">
-                      <FaSignInAlt className="me-1" />
-                      Sign In
+                    <Nav.Link>
+                      <FaSignInAlt /> Sign In
                     </Nav.Link>
                   </LinkContainer>
                   <LinkContainer to="/register">
-                    <Nav.Link className="d-flex align-items-center">
-                      <FaSignOutAlt className="me-1" />
-                      Sign Up
+                    <Nav.Link>
+                      <FaSignOutAlt /> Sign Up
                     </Nav.Link>
                   </LinkContainer>
                 </>

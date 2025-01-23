@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Capsule from './capsuleModel';
+import Capsule from '../models/capsuleModel.js';
 
 const collaborationSchema = new mongoose.Schema(
   {
