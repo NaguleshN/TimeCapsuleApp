@@ -8,23 +8,21 @@ import Collab from '../models/collaboration.js';
 
 const router = express.Router();
 
-// Resolve __dirname for ES module context
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Configure multer storage for file uploads
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Specify where to store the uploaded files (e.g., in 'uploads' folder)
-    cb(null, path.join(__dirname, '../uploads')); // Ensure 'uploads' folder is relative to this file
+    cb(null, path.join(__dirname, '../uploads')); 
   },
   filename: (req, file, cb) => {
-    // Generate a unique filename for each file
     cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 
-// Filter to allow only certain file types (photo, video, audio)
+
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/png', 'audio/mp3', 'video/mp4'];
   if (allowedTypes.includes(file.mimetype)) {
@@ -34,28 +32,25 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Initialize multer with storage and file filter options
+
 const upload = multer({ storage, fileFilter });
 
-// POST route for creating a new capsule with file upload
-router.post('/', upload.single('file'), async (req, res) => {
-  try {
-    const { capsuleName, unlockDate, typeOfCapsule, password ,collab } = req.body;
 
-    // Validate required fields
+router.post('/', upload.single('file'), async (req, res) => {
+  // const { email, password } = req.body;
+  try {
+    const { capsuleName, unlockDate, typeOfCapsule, password ,collab ,latitude , longitude} = req.body;
+
     if (!capsuleName || !unlockDate || !typeOfCapsule || !password || !collab) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // If no file uploaded, return an error
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    // Define file path (to save in the database)
-    const filePath = `/uploads/${req.file.filename}`;  // URL path for the file
+    const filePath = `/uploads/${req.file.filename}`; 
 
-    // Create a new Capsule instance with the form data and file path
     const newCapsule = new Capsule({
       capsuleName,
       unlockDate,
@@ -63,21 +58,24 @@ router.post('/', upload.single('file'), async (req, res) => {
       collab,
       password,
       file: filePath,
+      latitude,
+      longitude
     });
-
+    console.log(req.body.collab)
+    
     const newCollab = new Collab({
-      email: 'collaborator@example.com',
+      email: req.body.collab,
       capsule: newCapsule._id, 
     });
+
     await newCollab.save();
     
     const savedCapsule = await newCapsule.save();
 
-    // Respond with a success message and capsule data
     res.status(201).json({
       message: 'Capsule saved successfully',
       data: savedCapsule,
-      fileUrl: filePath,  // Include the file URL in the response
+      fileUrl: filePath, 
     });
   } catch (error) {
     console.error('Error saving capsule:', error);

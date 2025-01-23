@@ -14,8 +14,12 @@ import mongoose from 'mongoose';
 import Capsule from './models/capsuleModel.js';
 import User from './models/userModel.js';
 import cors from 'cors';
+import User from './models/userModel.js'
+import Collab from './models/collaboration.js'
+import loginUser from './middleware/loginUser.js'
+import { protect } from './middleware/authMiddleware.js';
 
-// Initialize environment variables
+
 dotenv.config();
 
 // Resolve __dirname in ES module context
@@ -36,26 +40,28 @@ connectDB();
 // Create an instance of Express
 const app = express();
 
-// Middleware
+
 
 const corsOptions = {
-  origin: ['http://localhost:3000'], // Allow frontend on localhost:3000
-  methods: ['GET', 'POST'],
+  origin: ['http://localhost:3000', 'http://localhost:3001'], 
+  methods: ['GET', 'POST'], 
   allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 };
+
 
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// File upload setup (using Multer)
-const upload = multer({
-  dest: uploadsDir, // Save files to the 'uploads' folder
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB size limit (adjust as needed)
-}).single('file'); // Accepts a single file upload with the field name 'file'
 
-// Serve static files (uploaded media) in production
+const upload = multer({
+  dest: uploadsDir, 
+  limits: { fileSize: 10 * 1024 * 1024 },
+}).single('file');
+
+
 if (process.env.NODE_ENV === 'production') {
   app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 }
@@ -88,8 +94,20 @@ app.post('/api/upload', upload, async (req, res) => {
   }
 });
 
-// Route for fetching all records (capsules)
-app.get('/all-records', async (req, res) => {
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));  
+if (process.env.NODE_ENV === 'production') {
+
+  app.get('*', (req, res) =>
+    res.sendFile(path.resolve(__dirname, 'frontend', 'dist', 'index.html'))
+  );
+} else {
+  app.get('/', (req, res) => {
+    res.send('API is running....');
+  });
+}
+
+app.get('/all-records', protect, async (req, res) => {
   try {
     const allRecords = await Capsule.find();
     res.json(allRecords); 
@@ -143,5 +161,4 @@ app.get('/api/capsules/user/:userId', async (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-// Start the server
 app.listen(port, () => console.log(`Server started on port ${port}`));

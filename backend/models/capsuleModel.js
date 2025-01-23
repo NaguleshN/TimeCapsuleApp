@@ -8,6 +8,8 @@ const capsuleSchema = new mongoose.Schema(
     collab: { type: String, required: true },
     password: { type: String, required: true },
     file: { type: String }, 
+    latitude: { type: Number }, 
+    longitude: { type: Number },
   },
   { timestamps: true } 
 );
