@@ -47,7 +47,7 @@ const RecordsList = () => {
     });
 
     return (
-        <div>
+        <>
           <h1>Today's Records</h1>
           {isLoading && <p>Loading records...</p>}
           {error && <p className="error">{error}</p>}
@@ -114,7 +114,7 @@ const RecordsList = () => {
               ))}
             </ul>
           )}    
-        </div>
+        </>
       );
 };
 

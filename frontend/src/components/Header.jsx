@@ -28,16 +28,45 @@ const Header = () => {
     <header>
       <Navbar bg="dark" variant="dark" expand="lg" collapseOnSelect>
         <Container>
+          {/* Logo */}
           <LinkContainer to="/">
-            <Navbar.Brand>MERN Auth</Navbar.Brand>
+            <Navbar.Brand className="fw-bold text-uppercase">
+              Digital time Capsule
+            </Navbar.Brand>
           </LinkContainer>
-            <a href="http://localhost:3001/view-capsule">MERN Auth</a>
+
+          {/* Navbar Toggler */}
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
+
+          {/* Navbar Links */}
           <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="ms-auto">
+            <Nav className="ms-auto align-items-center">
+              {/* Static Links */}
+              <Nav.Link href="http://localhost:3001/view-capsule">
+                View Capsule
+              </Nav.Link>
+              <Nav.Link href="http://localhost:3001/view-invitations">
+                View Invitations
+              </Nav.Link>
+
               {userInfo ? (
                 <>
-                  <NavDropdown title={userInfo.name} id="username">
+                  {/* User Dropdown */}
+                  <NavDropdown
+                    title={
+                      <span className="d-flex align-items-center">
+                        <img
+                          src={userInfo.avatar || '/default-avatar.png'}
+                          alt="avatar"
+                          className="rounded-circle me-2"
+                          style={{ width: '30px', height: '30px' }}
+                        />
+                        {userInfo.name}
+                      </span>
+                    }
+                    id="username"
+                    align="end"
+                  >
                     <LinkContainer to="/profile">
                       <NavDropdown.Item>Profile</NavDropdown.Item>
                     </LinkContainer>
@@ -48,14 +77,17 @@ const Header = () => {
                 </>
               ) : (
                 <>
+                  {/* Login and Register Links */}
                   <LinkContainer to="/login">
-                    <Nav.Link>
-                      <FaSignInAlt /> Sign In
+                    <Nav.Link className="d-flex align-items-center">
+                      <FaSignInAlt className="me-1" />
+                      Sign In
                     </Nav.Link>
                   </LinkContainer>
                   <LinkContainer to="/register">
-                    <Nav.Link>
-                      <FaSignOutAlt /> Sign Up
+                    <Nav.Link className="d-flex align-items-center">
+                      <FaSignOutAlt className="me-1" />
+                      Sign Up
                     </Nav.Link>
                   </LinkContainer>
                 </>

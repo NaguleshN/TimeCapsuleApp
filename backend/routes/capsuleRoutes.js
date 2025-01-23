@@ -39,10 +39,10 @@ const upload = multer({ storage, fileFilter });
 // POST route for creating a new capsule with file upload
 router.post('/', upload.single('file'), async (req, res) => {
   try {
-    const { capsuleName, unlockDate, typeOfCapsule, password } = req.body;
+    const { capsuleName, unlockDate, typeOfCapsule, password ,collab } = req.body;
 
     // Validate required fields
-    if (!capsuleName || !unlockDate || !typeOfCapsule || !password) {
+    if (!capsuleName || !unlockDate || !typeOfCapsule || !password || !collab) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -59,11 +59,17 @@ router.post('/', upload.single('file'), async (req, res) => {
       capsuleName,
       unlockDate,
       typeOfCapsule,
+      collab,
       password,
-      file: filePath,  // Save the file path (or file URL) in the database
+      file: filePath,
     });
 
-    // Save the capsule to MongoDB
+    const newCollab = new Collab({
+      email: 'collaborator@example.com',
+      capsule: newCapsule._id, 
+    });
+    await newCollab.save();
+    
     const savedCapsule = await newCapsule.save();
 
     // Respond with a success message and capsule data

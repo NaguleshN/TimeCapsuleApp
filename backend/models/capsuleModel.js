@@ -5,10 +5,11 @@ const capsuleSchema = new mongoose.Schema(
     capsuleName: { type: String, required: true },
     unlockDate: { type: Date, required: true },
     typeOfCapsule: { type: String, enum: ['video', 'photo', 'audio'], required: true },
+    collab: { type: String, required: true },
     password: { type: String, required: true },
-    file: { type: String },  // Add field to store the file path
+    file: { type: String }, 
   },
-  { timestamps: true } // Automatically adds createdAt and updatedAt fields
+  { timestamps: true } 
 );
 
 const Capsule = mongoose.model('Capsule', capsuleSchema);

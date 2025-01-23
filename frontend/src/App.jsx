@@ -17,7 +17,6 @@ const App = () => {
         <Routes>
           <Route path="/" element={<DigitalTimeCapsuleForm />} />
           {/* Add additional routes here as needed */}
-          <Route path="*" element={<h2>Page Not Found</h2>} />
         </Routes>
         <Outlet />
       </Container>

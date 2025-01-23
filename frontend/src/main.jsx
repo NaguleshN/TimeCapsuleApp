@@ -18,6 +18,7 @@ import ProfileScreen from './screens/ProfileScreen.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
 import DigitalTimeCapsuleForm from './components/DigitalTimeCapsuleForm'; // Import the form
 import ViewDigitalCapsule from './components/ViewDigitalCapsule.jsx'
+import ViewInvitations from './components/ViewInvitations.jsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -31,6 +32,7 @@ const router = createBrowserRouter(
       {/* New route for DigitalTimeCapsuleForm */}
       <Route path='/capsule-form' element={<DigitalTimeCapsuleForm />} />
       <Route path='/view-capsule' element={<ViewDigitalCapsule />} />
+      <Route path='/view-invitations' element={<ViewInvitations />} />
     </Route>
   )
 );
