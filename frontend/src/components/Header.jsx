@@ -1,5 +1,3 @@
-// src/components/Header.jsx
-
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
 import { FaSignInAlt, FaSignOutAlt } from 'react-icons/fa';
 import { LinkContainer } from 'react-router-bootstrap';
@@ -8,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import { useLogoutMutation } from '../slices/usersApiSlice';
 import { logout } from '../slices/authSlice';
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 const Header = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -30,20 +27,17 @@ const Header = () => {
     <header>
       <Navbar bg="dark" variant="dark" expand="lg" collapseOnSelect>
         <Container>
-          {/* Logo */}
           <LinkContainer to="/">
             <Navbar.Brand className="fw-bold text-uppercase">
               Digital time Capsule
             </Navbar.Brand>
           </LinkContainer>
 
-          {/* Navbar Toggler */}
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
 
-          {/* Navbar Links */}
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ms-auto align-items-center">
-              {/* Static Links */}
+              
               <Nav.Link href="http://localhost:3000/view-capsule">
                 View Capsule
               </Nav.Link>
@@ -53,20 +47,18 @@ const Header = () => {
               <Nav.Link href="http://localhost:3000/map">
                 Map
               </Nav.Link>
-
+              <Nav.Link 
+                href="http://localhost:3000/timeline" 
+                style={{ marginRight: "50px" }} 
+              > TimeLine
+                </Nav.Link>
               {userInfo ? (
                 <>
-                  {/* User Dropdown */}
-                  <NavDropdown
+                 
+                 <NavDropdown
                     title={
-                      <span className="d-flex align-items-center">
-                        <img
-                          src={userInfo.avatar || '/default-avatar.png'}
-                          alt="avatar"
-                          className="rounded-circle me-2"
-                          style={{ width: '30px', height: '30px' }}
-                        />
-                        {userInfo.name}
+                      <span className="d-flex align-items-center justify-content-between">
+                        <span>{userInfo.name}</span> 
                       </span>
                     }
                     id="username"

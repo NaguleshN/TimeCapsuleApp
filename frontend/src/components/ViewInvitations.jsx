@@ -1,182 +1,150 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux'; // Assuming you're using Redux for session management
-import { useNavigate } from "react-router-dom";
-import { Navigate, Outlet } from 'react-router-dom';
-import { getAuthTokenFromCookie } from '../slices/getAuthTokenFromCookie.js';
-
+import { useSelector } from 'react-redux'; 
+import { useNavigate, Navigate } from 'react-router-dom';
+import Loader from '../components/Loader'
 
 const CapsulesFetcher = () => {
-  const { userInfo } = useSelector((state) => state.auth); // Get the logged-in user info from Redux
-  try{
-      console.log(userInfo.email);
-    }
-    catch{
-      return <Navigate to="/login" />;
-    }
-  const [records, setRecords] = useState([]); // List of records
-  const [capsules, setCapsules] = useState([]); // Capsules fetched
+  const { userInfo } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
 
-  // Fetch all records initially
+  if (!userInfo?.email) {
+    return <Navigate to="/login" />;
+  }
+
+  const [records, setRecords] = useState([]); 
+  const [capsules, setCapsules] = useState([]); 
+  const [isLoading, setIsLoading] = useState(false); 
+  const [error, setError] = useState(null); 
+
   const fetchRecords = async () => {
+    setIsLoading(true); 
+    setError(null);
     try {
       const response = await fetch('http://localhost:5000/allcollab');
       const data = await response.json();
-      //   console.log(data)
 
-    //   const filteredData = data.filter(item => item.email === userInfo?.email).map(item => item.capsule);;
-        
-    //   console.log(filteredData)
+      const capResponse = await fetch('http://localhost:5000/all-records');
+      const capData = await capResponse.json();
 
-      const cap_response = await fetch('http://localhost:5000/all-records');
-      const cap_data = await cap_response.json();
-    //   console.log(cap_data)
+      const filteredCapData = capData.filter(
+        (item) => item.collab === userInfo?.email
+      );
 
-      const filteredCapData = cap_data.filter(item => item.collab == userInfo?.email );
-      console.log(userInfo?.email)
-      
-      console.log(filteredCapData);
-      setCapsules(filteredCapData)
-
-      
-    } catch (error) {
-      console.error('Error fetching records:', error);
+      setCapsules(filteredCapData);
+    } catch (err) {
+      console.error('Error fetching records:', err);
+      setError('Failed to fetch data. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-
-    const today = new Date();
-    const todayString = today.toISOString().split('T')[0]; 
-    console.log(todayString)
-
-    const filteredRecords = capsules.filter(record => {
-        const unlockDate = new Date(record.unlockDate);
-        const unlockDateString = unlockDate.toISOString().split('T')[0];
-        return unlockDateString === todayString;
-    });
-
-    const unfilteredRecords = capsules.filter(record => {
-        const unlockDate = new Date(record.unlockDate);
-        const unlockDateString = unlockDate.toISOString().split('T')[0];
-        return unlockDateString != todayString; 
-    });
-    
-    const navigate = useNavigate();
-
-    const handleViewClick = (id) => {
-      navigate(`/record/${id}`); // Navigate to the record detail page with the _id
-    };
-
   useEffect(() => {
-    fetchRecords(); 
+    fetchRecords();
   }, []);
 
-  useEffect(() => {
-    if (records.length > 0 && userInfo?.email) {
-      fetchCapsulesForUser(); 
-    }
-  }, [records, userInfo]);
+  const today = new Date();
+  const todayString = today.toISOString().split('T')[0];
+
+  const filteredRecords = capsules.filter((record) => {
+    const unlockDate = new Date(record.unlockDate);
+    return unlockDate.toISOString().split('T')[0] === todayString;
+  });
+
+  const unfilteredRecords = capsules.filter((record) => {
+    const unlockDate = new Date(record.unlockDate);
+    return unlockDate.toISOString().split('T')[0] !== todayString;
+  });
+
+  const handleViewClick = (id) => {
+    navigate(`/record/${id}`); 
+  };
 
   return (
-   
     <div>
-      <h3>User Capsules</h3>
-      
-      {filteredRecords.length === 0 ? (
+      <h3>Invited Capsules</h3>
+      {isLoading ? (
+        <Loader />
+      ) : error ? (
+        <p className="error">{error}</p>
+      ) : (
+        <>
+          <h1>Today's Records</h1>
+          {filteredRecords.length === 0 ? (
             <p>No records to unlock today.</p>
           ) : (
-            <ul class ="list-none space-y-2">
+            <ul className="list-none space-y-2">
               {filteredRecords.map((record, index) => (
                 <div key={index}>
-                  
-                 <div class="max-w-sm rounded overflow-hidden shadow-lg bg-white p-4 m-4">
-                    <div class="text-xl font-semibold text-gray-800 mb-2">Capsule Name: {record.capsuleName}</div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Unlock Date: </span>{record.unlockDate}
+                  <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white p-4 m-4">
+                    <div className="text-xl font-semibold text-gray-800 mb-2">
+                      Capsule Name: {record.capsuleName}
                     </div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Type of Capsule: </span>{record.typeOfCapsule}
+                    <div className="text-gray-600 text-sm mb-2">
+                      <span className="font-medium">Unlock Date: </span>
+                      {record.unlockDate}
                     </div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Password: </span>{record.password}
+                    <div className="text-gray-600 text-sm mb-2">
+                      <span className="font-medium">Type of Capsule: </span>
+                      {record.typeOfCapsule}
                     </div>
-                    <div class="flex justify-between ">
-                        <button type="button" class="bg-blue-500  px-4 py-2 rounded-md hover:bg-blue-600  m-4" onClick={() => handleViewClick(record._id)} >View</button>
-                     
+                    <div className="text-gray-600 text-sm mb-2">
+                      <span className="font-medium">Password: </span>
+                      {record.password}
                     </div>
-                </div>
+                    <div className="flex justify-between">
+                      <button
+                        type="button"
+                        className="bg-blue-500 px-4 py-2 rounded-md hover:bg-blue-600 m-4"
+                        onClick={() => handleViewClick(record._id)}
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </ul>
           )}
 
-            <h1>Locked Records</h1>
-
-            {unfilteredRecords.length === 0 ? (
-            <p>No records to unlock today.</p>
-            ) : (
-            <ul class ="list-none space-y-2">
-              {unfilteredRecords.map((record, index) => (
-                <div key={index} >
-                 
-                <div class="max-w-sm rounded overflow-hidden shadow-lg bg-white p-4 m-4">
-                    <div class="text-xl font-semibold text-gray-800 mb-2">Capsule Name: {record.capsuleName}</div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Unlock Date: </span>{record.unlockDate}
-                    </div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Type of Capsule: </span>{record.typeOfCapsule}
-                    </div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Latitude: </span>{record.latitude}
-                    </div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Longitude: </span>{record.longitude}
-                    </div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Longitude: </span>{record.collab}
-                    </div>
-                </div>
-                </div>
-              ))}
-            </ul>
-          )} 
-
-        {/* {capsules.length === 0 ? (
-            <p>No records to unlock today.</p>
+          <h1>Locked Records</h1>
+          {unfilteredRecords.length === 0 ? (
+            <p>No locked records.</p>
           ) : (
-            <ul class ="list-none space-y-2">
-              {capsules.map((record, index) => (
+            <ul className="list-none space-y-2">
+              {unfilteredRecords.map((record, index) => (
                 <div key={index}>
-                 
-                 <div class="max-w-sm rounded overflow-hidden shadow-lg bg-white p-4 m-4">
-                    <div class="text-xl font-semibold text-gray-800 mb-2">Capsule Name: {record.capsuleName}</div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Unlock Date: </span>{record.unlockDate}
+                  <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white p-4 m-4">
+                    <div className="text-xl font-semibold text-gray-800 mb-2">
+                      Capsule Name: {record.capsuleName}
                     </div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Type of Capsule: </span>{record.typeOfCapsule}
+                    <div className="text-gray-600 text-sm mb-2">
+                      <span className="font-medium">Unlock Date: </span>
+                      {record.unlockDate}
                     </div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Unlock date: </span>{record.unlockDate}
+                    <div className="text-gray-600 text-sm mb-2">
+                      <span className="font-medium">Type of Capsule: </span>
+                      {record.typeOfCapsule}
                     </div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Latitude: </span>{record.latitude}
+                    <div className="text-gray-600 text-sm mb-2">
+                      <span className="font-medium">Latitude: </span>
+                      {record.latitude}
                     </div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Longitude: </span>{record.longitude}
+                    <div className="text-gray-600 text-sm mb-2">
+                      <span className="font-medium">Longitude: </span>
+                      {record.longitude}
                     </div>
-                    <div class="text-gray-600 text-sm mb-2">
-                        <span class="font-medium">Longitude: </span>{record.collab}
+                    <div className="text-gray-600 text-sm mb-2">
+                      <span className="font-medium">Collaborator: </span>
+                      {record.collab}
                     </div>
-                    <div class="flex justify-between ">
-                        <button type="button" class="bg-blue-500  px-4 py-2 rounded-md hover:bg-blue-600  m-4" >View</button>
-                        <button type="button" class="bg-red-500 px-4 py-2 rounded-md hover:bg-red-600  m-4">Delete</button>
-                    </div>
-                </div>
+                  </div>
                 </div>
               ))}
             </ul>
-          )} */}
+          )}
+        </>
+      )}
     </div>
   );
 };

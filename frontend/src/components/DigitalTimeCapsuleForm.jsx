@@ -3,60 +3,37 @@ import { Form, Button, Container, Alert, Spinner } from 'react-bootstrap';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { getAuthTokenFromCookie } from '../slices/getAuthTokenFromCookie.js';
 import { Navigate, Outlet } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import axios from 'axios';
-import { useSelector } from 'react-redux'; 
-
-
-
 
 const DigitalTimeCapsuleForm = () => {
-  const { userInfo } = useSelector((state) => state.auth);
-  try{
-    console.log(userInfo.email)
+  
+  const { userInfo } = useSelector((state) => state.auth); 
+  const navigate = useNavigate();
 
-  }
-  catch{
+  if (!userInfo?.email) {
     return <Navigate to="/login" />;
   }
+
   const [capsuleName, setCapsuleName] = useState('');
   const [unlockDate, setUnlockDate] = useState('');
   const [typeOfCapsule, setTypeOfCapsule] = useState('video');
   const [collab, setCollab] = useState('');
   const [password, setPassword] = useState('');
   const [file, setFile] = useState(null);
-  const [latitude, setLatitude] = useState('');
-  const [longitude, setLongitude] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [records, setRecords] = useState([]);
-  const [position, setPosition] = useState(null); // Map Position
-  const [clickPosition, setClickPosition] = useState(null); // Clicked position
-  const [latitude, setLatitude] = useState(''); // Latitude state
-  const [longitude, setLongitude] = useState(''); // Longitude state
+  const [position, setPosition] = useState(null); 
+  const [clickPosition, setClickPosition] = useState(null); 
+  const [latitude, setLatitude] = useState(''); 
+  const [longitude, setLongitude] = useState(''); 
 
-  // Get users from server
+  
   const getUsers = async () => {
-    
-    
-      // if (token) {
-      //   const response = await axios.get('http://localhost:5000/all-users', {
-      //     headers: {
-      //       'Authorization': `Bearer ${token}`,
-      //     },
-      //     withCredentials: true,  
-      //   });
-      //   console.log(response);
-      //   const data = response.data;
-      //   console.log(data);
-      // }
-      // else{
-      //   console.log(token)
-      // }
-
-
     try {
       const response = await fetch('http://localhost:5000/all-users');
       if (!response.ok) {
@@ -70,7 +47,7 @@ const DigitalTimeCapsuleForm = () => {
     }
   };
 
-  // Get current location for map
+  
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -86,7 +63,7 @@ const DigitalTimeCapsuleForm = () => {
       console.error("Geolocation is not supported by this browser.");
     }
 
-    getUsers(); // Fetch users once on component mount
+    getUsers();
   }, []);
 
   const handleFileChange = (e) => {
@@ -110,6 +87,31 @@ const DigitalTimeCapsuleForm = () => {
     }
   };
 
+  const MailTrigger = async () => {
+    console.log(userInfo?.email) 
+    const mailformData = new FormData();
+    mailformData.append('to', userInfo?.email);
+    mailformData.append('subject', "regarding capsule notification");
+    mailformData.append('text', `You can able to view your capsule at time of unlocking ${userInfo?.email}`);
+    const response = await fetch('/send-mail', {
+      method: 'POST',
+      body: mailformData,
+    });
+
+  }
+
+  const handleMail = async (unlockdate ,cap_id) => {
+
+    const response2 =  await axios.post('http://localhost:5000/send_email', {
+      to: userInfo?.email,
+      subject: "regarding capsule notification",
+      text : `Capsule is unlocked !! To view : http://localhost:3000/record/${cap_id} `,
+      unlockDate : unlockdate 
+    });
+    console.log(response2)
+    alert('Email sent successfully!');
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -117,7 +119,7 @@ const DigitalTimeCapsuleForm = () => {
     formData.append('capsuleName', capsuleName);
     formData.append('unlockDate', unlockDate);
     formData.append('typeOfCapsule', typeOfCapsule);
-    formData.append('password', password);
+    formData.append('password',"1234");
     formData.append('collab', collab);
     formData.append('latitude', latitude);
     formData.append('longitude', longitude);
@@ -137,6 +139,11 @@ const DigitalTimeCapsuleForm = () => {
         const data = await response.json();
         console.log('Capsule saved successfully:', data);
         setSuccess(true);
+        // console.log("data",data.data)
+        console.log(data.data._id)
+        await handleMail(unlockDate, data.data._id);
+
+        navigate("/view-capsule");
       } else {
         const errorData = await response.json();
         setError(errorData.message || 'Failed to save the capsule.');
@@ -149,31 +156,30 @@ const DigitalTimeCapsuleForm = () => {
     }
   };
 
-  // Handle map click event
+   
   const MapClickHandler = () => {
     useMapEvents({
       click(e) {
         const { lat, lng } = e.latlng;
         setClickPosition(e.latlng);
-        setLatitude(lat);  // Set latitude
-        setLongitude(lng);  // Set longitude
+        setLatitude(lat); 
+        setLongitude(lng);  
       },
     });
     return null;
   };
 
-  // Invisible marker style for current location
+  
   const invisibleMarkerStyle = {
-    opacity: 0,  // Make marker invisible
+    opacity: 0, 
   };
 
-  // Custom Popup styles (inline styles)
   const customPopupStyles = {
-    backgroundColor: "white",  // White background for the popup
-    color: "black",  // Black text inside the popup
-    fontSize: "14px",  // Optional: Adjust font size
-    padding: "10px",  // Optional: Adjust padding
-    borderRadius: "5px",  // Optional: Rounded corners
+    backgroundColor: "white", 
+    color: "black", 
+    fontSize: "14px", 
+    padding: "10px", 
+    borderRadius: "5px",
   };
 
   if (position === null) {
@@ -194,16 +200,24 @@ const DigitalTimeCapsuleForm = () => {
             required
           />
         </Form.Group>
-
-        <Form.Group className="mb-3" controlId="unlockDate">
-          <Form.Label>Unlock Date</Form.Label>
+        {/* {new Date().toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            hour12: false,
+          })} */}
+        <Form.Group className="mb-3" controlId="unlockDateTime">
+          <Form.Label>Unlock Date and Time</Form.Label>
           <Form.Control
-            type="date"
+            type="datetime-local"
             value={unlockDate}
             onChange={(e) => setUnlockDate(e.target.value)}
+            min={new Date().toLocaleString('en-US', {
+              timeZone: 'Asia/Kolkata',
+              hour12: false,
+            })}
             required
           />
         </Form.Group>
+
 
         <Form.Group className="mb-3" controlId="typeOfCapsule">
           <Form.Label>Type of Capsule</Form.Label>
@@ -220,6 +234,26 @@ const DigitalTimeCapsuleForm = () => {
 
         <Form.Group className="mb-3" controlId="collab">
           <Form.Label>Collaborators</Form.Label>
+          <Form.Control
+            type="text"
+            value={collab}
+            onChange={(e) => setCollab(e.target.value)}
+            placeholder="Enter collaborator's email"
+            required
+          />
+          {collab && (
+            <div className="mt-2">
+              {records.some((record) => record.email === collab) ? (
+                <span style={{ color: "green" }}>Exists</span>
+              ) : (
+                <span style={{ color: "red" }}>Doesn't Exist</span>
+              )}
+            </div>
+          )}
+        </Form.Group>
+
+        {/* <Form.Group className="mb-3" controlId="collab">
+          <Form.Label>Collaborators</Form.Label>
           <Form.Select
             value={collab}
             onChange={(e) => setCollab(e.target.value)}
@@ -234,28 +268,13 @@ const DigitalTimeCapsuleForm = () => {
               </option>
             ))}
           </Form.Select>
-        </Form.Group>
+        </Form.Group> */}
 
-        <Form.Group className="mb-3" controlId="latitude">
-          <Form.Label>Latitude</Form.Label>
-          <Form.Control type="text" value={latitude} readOnly />
-        </Form.Group>
-
-        <Form.Group className="mb-3" controlId="longitude">
-          <Form.Label>Longitude</Form.Label>
-          <Form.Control type="text" value={longitude} readOnly />
-        </Form.Group>
-
-        <Button variant="secondary" onClick={getLocation} className="mb-3">
-          Get Location
-        </Button>
-
-        <Form.Group className="mb-3" controlId="password">
+        <Form.Group className="mb-3" controlId="password" style={{ display: 'none' }}>
           <Form.Label>Password</Form.Label>
           <Form.Control
-            type="password"
-            placeholder="Enter a secure password"
-            value={password}
+            type="hidden"
+            value="1234"
             onChange={(e) => setPassword(e.target.value)}
             required
           />
@@ -270,7 +289,6 @@ const DigitalTimeCapsuleForm = () => {
           />
         </Form.Group>
 
-        {/* Latitude and Longitude Fields */}
         <Form.Group className="mb-3" controlId="latitude">
           <Form.Label>Latitude</Form.Label>
           <Form.Control
@@ -319,14 +337,13 @@ const DigitalTimeCapsuleForm = () => {
         </Alert>
       )}
 
-      {/* Map Section */}
       <div style={{ height: "400px", marginTop: "30px" }}>
         <MapContainer center={position} zoom={13} style={{ height: "100%" }}>
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          {/* Invisible marker for current location */}
+        
           {position && (
             <Marker position={position} icon={L.divIcon()} style={{ opacity: 0 }}>
               <Popup>
@@ -335,7 +352,7 @@ const DigitalTimeCapsuleForm = () => {
               </Popup>
             </Marker>
           )}
-          {/* Marker and info for clicked location */}
+         
           {clickPosition && (
             <Marker position={clickPosition}>
               <Popup style={customPopupStyles}>

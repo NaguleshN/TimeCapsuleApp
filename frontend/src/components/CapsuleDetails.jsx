@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 const CapsuleDetails = () => {
-  const { id } = useParams();  // Getting the capsule ID from the URL
+  const { id } = useParams(); 
   const [capsule, setCapsule] = useState(null);
   const [error, setError] = useState(null);
 
@@ -14,14 +14,14 @@ const CapsuleDetails = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setCapsule(data);  // Set capsule data
+        setCapsule(data);  
       } catch (err) {
         setError(err.message);
       }
     };
 
     fetchCapsule();
-  }, [id]);  // Re-fetch data whenever `id` changes
+  }, [id]);  
 
   if (error) return <p>Error: {error}</p>;
   if (!capsule) return <p>Loading capsule details...</p>;
@@ -43,7 +43,7 @@ const CapsuleDetails = () => {
         <span className="font-medium">Password: </span>
         {capsule.password}
       </p>
-      {/* Display more details if needed */}
+      
       <div>
         {capsule.additionalInfo && (
           <p className="text-gray-600 text-sm mb-2">

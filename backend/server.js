@@ -14,10 +14,11 @@ import mongoose from 'mongoose';
 import Capsule from './models/capsuleModel.js';
 import User from './models/userModel.js';
 import cors from 'cors';
-import User from './models/userModel.js'
 import Collab from './models/collaboration.js'
 import loginUser from './middleware/loginUser.js'
 import { protect } from './middleware/authMiddleware.js';
+import nodemailer from 'nodemailer';
+import cron from 'node-cron';
 
 
 dotenv.config();
@@ -54,6 +55,81 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
+
+const sendEmail = ({ to, subject, text }) => {
+  const mailOptions = {
+    from: process.env.GMAIL_USER,
+    to: to,
+    subject: subject,
+    text: text,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log('Error occurred:', error);
+      } else {
+        console.log('Email sent:', info.response);
+      }
+    });
+  };
+
+  app.get('/get_capsules_data/', async (req, res) => {
+    try {
+      const capsules = await Capsule.find().select('capsuleName unlockDate _id'); // Select necessary fields
+      res.json(capsules);
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching capsules' });
+    }
+  });
+  
+
+  app.post('/send_email', async (req, res) => {
+    const { to, subject, text, unlockDate } = req.body;
+    console.log("hello")
+    console.log(to, subject, text,unlockDate)
+
+
+    const date = new Date(unlockDate);
+
+    const kolkataTime = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).format(date);
+    
+    // Split the formatted string into parts to construct the new Date
+    const [month, day, year, hour, minute] = kolkataTime.match(/\d+/g);
+    const kolkataDate = new Date(`${year}-${month}-${day}T${hour}:${minute}:00`);
+    
+    console.log(kolkataDate);
+
+    const cronExpression = `${kolkataDate.getMinutes()} ${kolkataDate.getHours()} ${kolkataDate.getDate()} ${kolkataDate.getMonth() + 1} *`;
+
+    console.log(cronExpression)
+    console.log(`Scheduling email for ${to} at ${kolkataDate}`);
+
+    // Schedule the email
+    cron.schedule(cronExpression, () => {
+      sendEmail({ to, subject, text });
+    });
+
+    // sendEmail(to, subject, text);
+    res.status(200).json({ message: 'Email scheduled successfully' });
+  });
 
 
 const upload = multer({

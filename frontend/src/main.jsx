@@ -21,6 +21,7 @@ import ViewDigitalCapsule from './components/ViewDigitalCapsule.jsx'
 import ViewInvitations from './components/ViewInvitations.jsx'
 import Map from './components/Map.jsx'
 import CapsuleDetails from './components/CapsuleDetail.jsx'
+import Timeline from './components/Timeline.jsx';
 
 
 const router = createBrowserRouter(
@@ -37,6 +38,7 @@ const router = createBrowserRouter(
       <Route path='/view-capsule' element={<ViewDigitalCapsule />} />
       <Route path='/view-invitations' element={<ViewInvitations />} />
       <Route path='/map' element={<Map />} />
+      <Route path="/timeline" element={<Timeline />} />
       <Route path="/record/:id" element={<CapsuleDetails />} /> 
     </Route>
   )
