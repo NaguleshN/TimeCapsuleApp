@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Navigate } from 'react-router-dom';
-import { getAuthTokenFromCookie } from '../slices/getAuthTokenFromCookie.js';
 import { useSelector } from 'react-redux';
 
 const CapsuleDetails = () => {
@@ -58,7 +57,7 @@ const CapsuleDetails = () => {
                   <div className="mt-4">
                     {record.typeOfCapsule === "photo" && (
                       <img
-                        src={`http://localhost:5000${record.file}`}
+                        src={record.fileUrl} 
                         alt="Capsule content"
                         className="img-fluid rounded shadow-sm"
                         style={{ maxWidth: '400px', maxHeight: '400px', objectFit: 'cover' }}
@@ -67,14 +66,14 @@ const CapsuleDetails = () => {
 
                     {record.typeOfCapsule === "video" && (
                       <video controls className="w-100 rounded shadow-sm"  style={{ maxWidth: '400px', maxHeight: '400px', objectFit: 'cover' }}>
-                        <source src={`http://localhost:5000${record.file}`} type="video/mp4" />
+                        <source src={record.fileUrl} type="video/mp4" />
                         Your browser does not support the video tag.
                       </video>
                     )}
 
                     {record.typeOfCapsule === "audio" && (
                       <audio controls className="w-100 rounded shadow-sm"  style={{ maxWidth: '400px', maxHeight: '400px', objectFit: 'cover' }}>
-                        <source src={`http://localhost:5000${record.file}`} type="audio/mpeg" />
+                        <source src={record.fileUrl}  type="audio/mpeg" />
                         Your browser does not support the audio tag.
                       </audio>
                     )}
@@ -88,10 +87,7 @@ const CapsuleDetails = () => {
                     <span className="font-medium">Type of Capsule: </span>
                     {record.typeOfCapsule}
                   </div>
-                  <div className="text-gray-600 text-sm mb-2">
-                    <span className="font-medium">Password: </span>
-                    {record.password}
-                  </div>
+                  
                 </div>
               </div>
             ))}
